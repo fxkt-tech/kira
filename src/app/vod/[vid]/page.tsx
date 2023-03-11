@@ -2,11 +2,12 @@
 import { Chat, Video } from "@/pages/api/common";
 import videoInfo from '@/pages/api/videoInfo';
 import videoPlay from '@/pages/api/videoPlay';
-import { Avatar, Button, Card, CardContent, Divider, Grid, IconButton, InputBase, Paper, TextField, Typography } from '@mui/material';
-import { useEffect, useState, useTransition } from 'react';
-import Stack from '@mui/material/Stack';
 import SendIcon from '@mui/icons-material/Send';
-// import { useRouter } from "next/navigation";
+import { Avatar, Card, CardContent, Grid, IconButton, InputBase, Paper, Typography } from '@mui/material';
+import Stack from '@mui/material/Stack';
+import { useEffect, useState } from 'react';
+
+const wsx = new WebSocket('ws://192.168.3.10:8080/ws');
 
 export default function VOD({
   params,
@@ -19,18 +20,35 @@ export default function VOD({
   const [chatText, SetChatText] = useState<string>('');
 
   useEffect(() => {
-    async function getData() {
+    async function getVideoInfoAndPlay() {
       const res = await videoInfo({ video_id: params.vid });
       SetVideo(res.data.video);
       const res2 = await videoPlay({ video_id: params.vid, video_ver_id: res.data.video.video_ver_id });
       SetPlayURL(res2.data.files[0].url);
     }
-    getData();
+    getVideoInfoAndPlay();
   }, []);
 
+  useEffect(() => {
+    wsx.onmessage = (event) => {
+      console.log(event.data)
+      let _chats = chats;
+      _chats = _chats.concat([{
+        chat_id: Date.now().toString(),
+        text: event.data,
+        user: video.owner_info,
+      }])
+      SetChats(_chats);
+    }
+  })
+
   const sendChat = () => {
+    if (chatText === '') {
+      return
+    }
+    wsx.send(chatText);
     let _chats = chats;
-    _chats = _chats?.concat([{
+    _chats = _chats.concat([{
       chat_id: Date.now().toString(),
       text: chatText,
       user: video.owner_info,
@@ -72,7 +90,7 @@ export default function VOD({
           </Stack>
         </Grid>
 
-        <Grid xs={3} item sx={{ maxWidth: '100px' }}>
+        <Grid xs={3} item>
           <Paper
             component="form"
             sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '100%' }}

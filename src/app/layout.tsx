@@ -1,10 +1,11 @@
 'use client'
 import './globals.css'
 import styles from './page.module.css'
-import { AppBar, Box, Container, Toolbar, Divider } from '@mui/material'
+import { AppBar, Box, Container, Toolbar, Divider, Button, IconButton } from '@mui/material'
 import Image from 'next/image';
 import logoPic from '../../public/logo.png';
 import Link from 'next/link';
+import { Fingerprint } from '@mui/icons-material';
 
 export default function RootLayout({
   children,
@@ -24,13 +25,11 @@ export default function RootLayout({
             <Toolbar>
               <Box sx={{ flexGrow: 1 }} />
               <Link className={styles.menuBtn} href="/vod">点播</Link>
-              <Image
-                className={styles.logo}
-                src={logoPic}
-                alt="Picture of the author"
-                width={100}
-                height={54}
-              />
+              <Link className={styles.menuBtn} href="/">
+                <IconButton aria-label="fingerprint" color="success">
+                  <Fingerprint />
+                </IconButton>
+              </Link>
               <Link className={styles.menuBtn} href="/live">直播</Link>
               <Box sx={{ flexGrow: 1 }} />
             </Toolbar>
